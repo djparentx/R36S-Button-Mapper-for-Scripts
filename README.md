@@ -63,6 +63,14 @@ The script modifies:
 
 This file is used by gptokeyb to translate controller input into keyboard actions.
 
+/opt/dingux/oshgamepad.cfg
+
+This file is used by File Manager to map gamepad actions.
+
+/opt/system/Tools/PortMaster/gamecontrollerdb.txt
+
+This file is used by PortMaster to map gamepad actions.
+
 ---
 
 ### Backup System
@@ -70,6 +78,8 @@ This file is used by gptokeyb to translate controller input into keyboard action
 - On first modification, creates:
 
 /opt/inttools/keys.gptk.bak
+/opt/dingux/oshgamepad.cfg.bak
+/opt/system/Tools/PortMaster/gamecontrollerdb.txt.bak
 
 - Additional temporary backups are created when combining modes:
 
