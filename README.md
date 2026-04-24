@@ -16,6 +16,7 @@ It allows users to quickly toggle common usability improvements such as swapping
 
 ## Features
 
+- Portmaster and File Manager added to A/B Switch
 - B button can function as Back (ESC)
 - Toggle A/B button swap
 - Restore original button configuration at any time
