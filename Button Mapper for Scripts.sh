@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # =======================================
-# R36S Button Mapper for Scripts
+# R36S Button Mapper for Scripts v1.1
 # by djparent
 # =======================================
 
@@ -46,6 +46,8 @@ AB_FLAG="/var/cache/Switch_AB"
 KEYS="/opt/inttools/keys.gptk"
 BB_FLAG="/var/cache/B_for_Back"
 BBAK="/opt/inttools/keys.gptk.bbak"
+OSH="/opt/dingux/oshgamepad.cfg"
+PM="/opt/system/Tools/PortMaster/gamecontrollerdb.txt"
 SWITCH_BAK="/opt/inttools/keys.gptk.switchbak"
 
 if [ -f "$ES_CONF" ]; then
@@ -307,39 +309,45 @@ fi
 # Switch A/B buttons
 # =======================================================
 Switch_AB() {
-if [[ ! -f "$KEYS.bak" ]]; then
-	cp "$KEYS" "$KEYS.bak" || exit 1
-	dialog --backtitle "$T_BACKTITLE" --infobox "$T_KEYS\n$KEYS.bak" 8 50
-	sleep 2
-fi
-if [[ -f "$AB_FLAG" ]]; then
-	if [[ -f "$BB_FLAG" ]]; then	
-		sed -i 's/^b = .*/b = esc/' "$KEYS"
-		sed -i 's/^a = .*/a = enter/' "$KEYS"
-		rm -f "$SWITCH_BAK"
-		rm -f "$AB_FLAG"
-		dialog --backtitle "$T_BACKTITLE" --msgbox "$T_ORIGINAL" 6 50
-	else
-		cp -f "$SWITCH_BAK" "$KEYS" || exit 1
-		rm -f "$SWITCH_BAK"
-		rm -f "$AB_FLAG"
-		dialog --backtitle "$T_BACKTITLE" --msgbox "$T_ORIGINAL" 6 50
-	fi	
-else
-	if [[ -f "$BB_FLAG" ]]; then
-		cp "$KEYS" "$SWITCH_BAK" || exit 1
-		sed -i 's/^b = .*/b = enter/' "$KEYS"
-		sed -i 's/^a = .*/a = esc/' "$KEYS"
-		touch "$AB_FLAG"
-		dialog --backtitle "$T_BACKTITLE" --msgbox "$T_AB_SWITCH" 6 50
-	else
-		cp "$KEYS" "$SWITCH_BAK" || exit 1
-		sed -i 's/^b = .*/b = enter/' "$KEYS"
-		sed -i 's/^a = .*/a = backspace/' "$KEYS"
-		touch "$AB_FLAG"
-		dialog --backtitle "$T_BACKTITLE" --msgbox "$T_AB_SWITCH" 6 50
-	fi
-fi
+    _bak() { [[ ! -f "$1.bak" ]] && { cp "$1" "$1.bak" || exit 1; }; }
+
+    _bak "$OSH"
+    _bak "$PM"
+
+    if [[ ! -f "$KEYS.bak" ]]; then
+        cp "$KEYS" "$KEYS.bak" || exit 1
+        dialog --backtitle "$T_BACKTITLE" --infobox "$T_KEYS\n$KEYS.bak" 8 50
+        sleep 2
+    fi
+
+    if [[ -f "$AB_FLAG" ]]; then
+        # --- Restore original layout ---
+        if [[ -f "$BB_FLAG" ]]; then
+            sed -i -e 's/^b = .*/b = esc/' -e 's/^a = .*/a = enter/' "$KEYS"
+        else
+            cp -f "$SWITCH_BAK" "$KEYS" || exit 1
+        fi
+
+        rm -f "$SWITCH_BAK" "$AB_FLAG"
+        cp "${OSH}.bak" "$OSH" || exit 1
+        cp "${PM}.bak" "$PM" || exit 1
+        dialog --backtitle "$T_BACKTITLE" --msgbox "$T_ORIGINAL" 6 50
+
+    else
+
+        cp "$KEYS" "$SWITCH_BAK" || exit 1
+        # Only the 'a' binding differs between BB and non-BB
+        local a_val=$([[ -f "$BB_FLAG" ]] && echo "esc" || echo "backspace")
+        sed -i -e 's/^b = .*/b = enter/' -e "s/^a = .*/a = $a_val/" "$KEYS"
+
+        sed -i \
+            -e 's/\(^input_player1_a_btn = "\)1"/\10/' \
+            -e 's/\(^input_player1_b_btn = "\)0"/\11/' \
+            "$OSH"
+        sed -i '/^190000004b4800000011000000010000,/ s/a:b1,b:b0/a:b0,b:b1/' "$PM"
+        touch "$AB_FLAG"
+        dialog --backtitle "$T_BACKTITLE" --msgbox "$T_AB_SWITCH" 6 50
+    fi
 }
 
 # =======================================================
