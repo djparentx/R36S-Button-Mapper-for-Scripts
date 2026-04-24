@@ -271,38 +271,31 @@ Restore() {
 # B as Back button
 # =======================================================
 B_for_Back() {
-if [[ ! -f "$KEYS.bak" ]]; then
-	cp "$KEYS" "$KEYS.bak" || exit 1
-	dialog --backtitle "$T_BACKTITLE" --infobox "$T_KEYS\n$KEYS.bak" 8 50
-	sleep 2
-fi
-if [[ -f "$BB_FLAG" ]]; then
-	if [[ -f "$AB_FLAG" ]]; then	
-		sed -i 's/^a = .*/a = backspace/' "$KEYS"
-		rm -f "$BBAK"
-		rm -f "$BB_FLAG"
-		dialog --backtitle "$T_BACKTITLE" --msgbox "$T_ORIGINAL" 6 50
-	else
-		cp -f "$BBAK" "$KEYS" || exit 1
-		rm -f "$BBAK"
-		rm -f "$BB_FLAG"
-		dialog --backtitle "$T_BACKTITLE" --msgbox "$T_ORIGINAL" 6 50
-	fi
-else
-	if [[ -f "$AB_FLAG" ]]; then	
-		cp "$KEYS" "$BBAK" || exit 1
-		sed -i 's/^b = .*/b = enter/' "$KEYS"
-		sed -i 's/^a = .*/a = esc/' "$KEYS"
-		touch "$BB_FLAG"
-		dialog --backtitle "$T_BACKTITLE" --msgbox "$T_B_EN" 6 50
-	else
-		cp "$KEYS" "$BBAK" || exit 1
-		sed -i 's/^b = .*/b = esc/' "$KEYS"
-		sed -i 's/^a = .*/a = enter/' "$KEYS"
-		touch "$BB_FLAG"
-		dialog --backtitle "$T_BACKTITLE" --msgbox "$T_B_EN" 6 50
-	fi	
-fi
+    if [[ ! -f "$KEYS.bak" ]]; then
+        cp "$KEYS" "$KEYS.bak" || exit 1
+        dialog --backtitle "$T_BACKTITLE" --infobox "$T_KEYS\n$KEYS.bak" 8 50
+        sleep 2
+    fi
+
+    if [[ -f "$BB_FLAG" ]]; then
+        if [[ -f "$AB_FLAG" ]]; then
+            sed -i 's/^a = .*/a = backspace/' "$KEYS"
+        else
+            cp -f "$BBAK" "$KEYS" || exit 1
+        fi
+        rm -f "$BBAK" "$BB_FLAG"
+        dialog --backtitle "$T_BACKTITLE" --msgbox "$T_ORIGINAL" 6 50
+    else
+        cp "$KEYS" "$BBAK" || exit 1
+        if [[ -f "$AB_FLAG" ]]; then
+            local b_val="enter" a_val="esc"
+        else
+            local b_val="esc"   a_val="enter"
+        fi
+        sed -i -e "s/^b = .*/b = $b_val/" -e "s/^a = .*/a = $a_val/" "$KEYS"
+        touch "$BB_FLAG"
+        dialog --backtitle "$T_BACKTITLE" --msgbox "$T_B_EN" 6 50
+    fi
 }
 
 # =======================================================
@@ -321,25 +314,19 @@ Switch_AB() {
     fi
 
     if [[ -f "$AB_FLAG" ]]; then
-        # --- Restore original layout ---
         if [[ -f "$BB_FLAG" ]]; then
             sed -i -e 's/^b = .*/b = esc/' -e 's/^a = .*/a = enter/' "$KEYS"
         else
             cp -f "$SWITCH_BAK" "$KEYS" || exit 1
         fi
-
         rm -f "$SWITCH_BAK" "$AB_FLAG"
         cp "${OSH}.bak" "$OSH" || exit 1
         cp "${PM}.bak" "$PM" || exit 1
         dialog --backtitle "$T_BACKTITLE" --msgbox "$T_ORIGINAL" 6 50
-
     else
-
         cp "$KEYS" "$SWITCH_BAK" || exit 1
-        # Only the 'a' binding differs between BB and non-BB
         local a_val=$([[ -f "$BB_FLAG" ]] && echo "esc" || echo "backspace")
         sed -i -e 's/^b = .*/b = enter/' -e "s/^a = .*/a = $a_val/" "$KEYS"
-
         sed -i \
             -e 's/\(^input_player1_a_btn = "\)1"/\10/' \
             -e 's/\(^input_player1_b_btn = "\)0"/\11/' \
