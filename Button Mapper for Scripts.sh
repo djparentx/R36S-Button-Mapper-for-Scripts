@@ -299,6 +299,29 @@ B_for_Back() {
 }
 
 # =======================================================
+# RetroArch Menu Swap OK and Cancel Buttons
+# =======================================================
+Retro_Jap() {
+	grep -q '^menu_swap_ok_cancel_buttons =' /home/ark/.config/retroarch/retroarch.cfg && \
+	sed -i 's/^menu_swap_ok_cancel_buttons = .*/menu_swap_ok_cancel_buttons = "false"/' /home/ark/.config/retroarch/retroarch.cfg || \
+	echo 'menu_swap_ok_cancel_buttons = "false"' >> /home/ark/.config/retroarch/retroarch.cfg
+
+	grep -q '^menu_swap_ok_cancel_buttons =' /home/ark/.config/retroarch32/retroarch.cfg && \
+	sed -i 's/^menu_swap_ok_cancel_buttons = .*/menu_swap_ok_cancel_buttons = "false"/' /home/ark/.config/retroarch32/retroarch.cfg || \
+	echo 'menu_swap_ok_cancel_buttons = "false"' >> /home/ark/.config/retroarch32/retroarch.cfg
+}
+
+Retro_West() {
+	grep -q '^menu_swap_ok_cancel_buttons =' /home/ark/.config/retroarch/retroarch.cfg && \
+	sed -i 's/^menu_swap_ok_cancel_buttons = .*/menu_swap_ok_cancel_buttons = "true"/' /home/ark/.config/retroarch/retroarch.cfg || \
+	echo 'menu_swap_ok_cancel_buttons = "true"' >> /home/ark/.config/retroarch/retroarch.cfg
+	
+	grep -q '^menu_swap_ok_cancel_buttons =' /home/ark/.config/retroarch32/retroarch.cfg && \
+	sed -i 's/^menu_swap_ok_cancel_buttons = .*/menu_swap_ok_cancel_buttons = "true"/' /home/ark/.config/retroarch32/retroarch.cfg || \
+	echo 'menu_swap_ok_cancel_buttons = "true"' >> /home/ark/.config/retroarch32/retroarch.cfg
+}
+
+# =======================================================
 # Switch A/B buttons
 # =======================================================
 Switch_AB() {
@@ -319,9 +342,10 @@ Switch_AB() {
         else
             cp -f "$SWITCH_BAK" "$KEYS" || exit 1
         fi
-        rm -f "$SWITCH_BAK" "$AB_FLAG"
         cp "${OSH}.bak" "$OSH" || exit 1
         cp "${PM}.bak" "$PM" || exit 1
+		Retro_Jap
+        rm -f "$SWITCH_BAK" "$AB_FLAG"
         dialog --backtitle "$T_BACKTITLE" --msgbox "$T_ORIGINAL" 6 50
     else
         cp "$KEYS" "$SWITCH_BAK" || exit 1
@@ -332,6 +356,7 @@ Switch_AB() {
             -e 's/\(^input_player1_b_btn = "\)0"/\11/' \
             "$OSH"
         sed -i '/^190000004b4800000011000000010000,/ s/a:b1,b:b0/a:b0,b:b1/' "$PM"
+		Retro_West
         touch "$AB_FLAG"
         dialog --backtitle "$T_BACKTITLE" --msgbox "$T_AB_SWITCH" 6 50
     fi
