@@ -1,6 +1,6 @@
 # R36S Button Mapper for Scripts
 
-v1.0 by djparent
+v1.2 by djparent
 
 A lightweight button mapping tool for the R36S, designed for ArkOS and dArkOS, providing a simple, controller-friendly interface to modify A/B behavior and enable B-as-Back functionality across scripts.
 
@@ -16,6 +16,7 @@ It allows users to quickly toggle common usability improvements such as swapping
 
 ## Features
 
+- KODI added to A/B Switch
 - RetroArch added to A/B Switch
 - Portmaster and File Manager added to A/B Switch
 - B button can function as Back (ESC)
