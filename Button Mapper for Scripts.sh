@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # =======================================
-# R36S Button Mapper for Scripts v1.1
+# R36S Button Mapper for Scripts v1.2
 # by djparent
 # =======================================
 
@@ -47,6 +47,7 @@ KEYS="/opt/inttools/keys.gptk"
 BB_FLAG="/var/cache/B_for_Back"
 BBAK="/opt/inttools/keys.gptk.bbak"
 OSH="/opt/dingux/oshgamepad.cfg"
+KODI="/home/ark/.kodi/userdata/addon_data/peripheral.joystick/resources/buttonmaps/xml/linux/GO-Super_Gamepad_17b_4a.xml"
 PM="/opt/system/Tools/PortMaster/gamecontrollerdb.txt"
 SWITCH_BAK="/opt/inttools/keys.gptk.switchbak"
 
@@ -246,15 +247,12 @@ Exit_Menu() {
     printf "\033[H\033[2J" > "$CURR_TTY"
     printf "\e[?25h" > "$CURR_TTY"
 	Stop_GPTKeyb
+    rm -f "$TMP_KEYS"
     if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
         [ -n "$ORIGINAL_FONT" ] && setfont "$ORIGINAL_FONT"
     fi
 
     exit 0
-}
-
-Cleanup() {
-    rm -f "$TMP_KEYS"
 }
 
 # =======================================================
@@ -344,6 +342,12 @@ Switch_AB() {
         fi
         cp "${OSH}.bak" "$OSH" || exit 1
         cp "${PM}.bak" "$PM" || exit 1
+		if [[ -f "$KODI" ]]; then
+			sed -i \
+				-e 's/feature name="a" button="0"/feature name="a" button="1"/' \
+				-e 's/feature name="b" button="1"/feature name="b" button="0"/' \
+				"$KODI"
+		fi
 		Retro_Jap
         rm -f "$SWITCH_BAK" "$AB_FLAG"
         dialog --backtitle "$T_BACKTITLE" --msgbox "$T_ORIGINAL" 6 50
@@ -355,7 +359,13 @@ Switch_AB() {
             -e 's/\(^input_player1_a_btn = "\)1"/\10/' \
             -e 's/\(^input_player1_b_btn = "\)0"/\11/' \
             "$OSH"
-        sed -i '/^190000004b4800000011000000010000,/ s/a:b1,b:b0/a:b0,b:b1/' "$PM"
+		if [[ -f "$KODI" ]]; then
+			sed -i \
+				-e 's/feature name="a" button="1"/feature name="a" button="0"/' \
+				-e 's/feature name="b" button="0"/feature name="b" button="1"/' \
+				"$KODI"
+		fi
+		sed -i '/^190000004b4800000011000000010000,/ s/a:b1,b:b0/a:b0,b:b1/' "$PM"
 		Retro_West
         touch "$AB_FLAG"
         dialog --backtitle "$T_BACKTITLE" --msgbox "$T_AB_SWITCH" 6 50
@@ -418,6 +428,6 @@ Start_GPTKeyb
 # =======================================================
 printf "\033[H\033[2J" > "$CURR_TTY"
 dialog --clear
-trap 'Stop_GPTKeyb; Cleanup' Exit_Menu EXIT
+trap Exit_Menu EXIT
 
 Main_Menu
