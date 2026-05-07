@@ -16,11 +16,14 @@ It allows users to quickly toggle common usability improvements such as swapping
 
 ## Features
 
-- KODI added to A/B Switch
-- RetroArch added to A/B Switch
-- Portmaster and File Manager added to A/B Switch
 - B button can function as Back (ESC)
-- Toggle A/B button swap
+- Toggle A/B button swap for the following in one-click:
+  - EmulationStation
+  - ThemeMaster
+  - PortMaster
+  - File Manager
+  - All Scripts
+  - KODI (on dArkOSRE)
 - Restore original button configuration at any time
 - Automatic backup of original config on first run
 - Safe toggle system using flag files
