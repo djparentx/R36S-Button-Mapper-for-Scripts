@@ -49,6 +49,8 @@ BBAK="/opt/inttools/keys.gptk.bbak"
 OSH="/opt/dingux/oshgamepad.cfg"
 KODI="/home/ark/.kodi/userdata/addon_data/peripheral.joystick/resources/buttonmaps/xml/linux/GO-Super_Gamepad_17b_4a.xml"
 PM="/opt/system/Tools/PortMaster/gamecontrollerdb.txt"
+TM="/opt/system/Tools/ThemeMaster/paramcontrols.txt"
+ES="/home/ark/.emulationstation/es_settings.cfg"
 SWITCH_BAK="/opt/inttools/keys.gptk.switchbak"
 
 if [ -f "$ES_CONF" ]; then
@@ -297,26 +299,61 @@ B_for_Back() {
 }
 
 # =======================================================
+# EmulationStation Swap A and B Buttons
+# =======================================================
+ES_stock() {
+	sed -i '/bool name="InvertButtons"/d' "$ES"
+}
+
+ES_swap() {
+	sed -i '/bool name="ClockMode12"/a <bool name="InvertButtons" value="true" />' "$ES"
+}
+
+# =======================================================
+# ThemeMaster Swap OK and Cancel Buttons
+# =======================================================
+TM_stock() {
+	sed -i \
+		-e 's/a_key = 304/a_key = 305/' \
+		-e 's/b_key = 305/b_key = 304/' \
+		"$TM"
+}
+
+TM_swap() {
+	sed -i \
+		-e 's/a_key = 305/a_key = 304/' \
+		-e 's/b_key = 304/b_key = 305/' \
+		"$TM"
+}
+
+# =======================================================
+# KODI Swap OK and Cancel Buttons
+# =======================================================
+KODI_stock() {
+	sed -i \
+		-e 's/feature name="a" button="0"/feature name="a" button="1"/' \
+		-e 's/feature name="b" button="1"/feature name="b" button="0"/' \
+		"$KODI"
+}
+
+KODI_swap() {
+	sed -i \
+		-e 's/feature name="a" button="1"/feature name="a" button="0"/' \
+		-e 's/feature name="b" button="0"/feature name="b" button="1"/' \
+		"$KODI"
+}
+
+# =======================================================
 # RetroArch Menu Swap OK and Cancel Buttons
 # =======================================================
 Retro_Jap() {
-	grep -q '^menu_swap_ok_cancel_buttons =' /home/ark/.config/retroarch/retroarch.cfg && \
-	sed -i 's/^menu_swap_ok_cancel_buttons = .*/menu_swap_ok_cancel_buttons = "false"/' /home/ark/.config/retroarch/retroarch.cfg || \
-	echo 'menu_swap_ok_cancel_buttons = "false"' >> /home/ark/.config/retroarch/retroarch.cfg
-
-	grep -q '^menu_swap_ok_cancel_buttons =' /home/ark/.config/retroarch32/retroarch.cfg && \
-	sed -i 's/^menu_swap_ok_cancel_buttons = .*/menu_swap_ok_cancel_buttons = "false"/' /home/ark/.config/retroarch32/retroarch.cfg || \
-	echo 'menu_swap_ok_cancel_buttons = "false"' >> /home/ark/.config/retroarch32/retroarch.cfg
+	sed -i 's/^menu_swap_ok_cancel_buttons = .*/menu_swap_ok_cancel_buttons = "false"/' /home/ark/.config/retroarch/retroarch.cfg
+	sed -i 's/^menu_swap_ok_cancel_buttons = .*/menu_swap_ok_cancel_buttons = "false"/' /home/ark/.config/retroarch32/retroarch.cfg
 }
 
 Retro_West() {
-	grep -q '^menu_swap_ok_cancel_buttons =' /home/ark/.config/retroarch/retroarch.cfg && \
-	sed -i 's/^menu_swap_ok_cancel_buttons = .*/menu_swap_ok_cancel_buttons = "true"/' /home/ark/.config/retroarch/retroarch.cfg || \
-	echo 'menu_swap_ok_cancel_buttons = "true"' >> /home/ark/.config/retroarch/retroarch.cfg
-	
-	grep -q '^menu_swap_ok_cancel_buttons =' /home/ark/.config/retroarch32/retroarch.cfg && \
-	sed -i 's/^menu_swap_ok_cancel_buttons = .*/menu_swap_ok_cancel_buttons = "true"/' /home/ark/.config/retroarch32/retroarch.cfg || \
-	echo 'menu_swap_ok_cancel_buttons = "true"' >> /home/ark/.config/retroarch32/retroarch.cfg
+	sed -i 's/^menu_swap_ok_cancel_buttons = .*/menu_swap_ok_cancel_buttons = "true"/' /home/ark/.config/retroarch/retroarch.cfg
+	sed -i 's/^menu_swap_ok_cancel_buttons = .*/menu_swap_ok_cancel_buttons = "true"/' /home/ark/.config/retroarch32/retroarch.cfg
 }
 
 # =======================================================
@@ -342,15 +379,16 @@ Switch_AB() {
         fi
         cp "${OSH}.bak" "$OSH" || exit 1
         cp "${PM}.bak" "$PM" || exit 1
-		if [[ -f "$KODI" ]]; then
-			sed -i \
-				-e 's/feature name="a" button="0"/feature name="a" button="1"/' \
-				-e 's/feature name="b" button="1"/feature name="b" button="0"/' \
-				"$KODI"
-		fi
 		Retro_Jap
+		TM_stock
+		ES_stock
+		if [[ -f "$KODI" ]]; then
+			KODI_stock
+		fi
         rm -f "$SWITCH_BAK" "$AB_FLAG"
         dialog --backtitle "$T_BACKTITLE" --msgbox "$T_ORIGINAL" 6 50
+		touch /tmp/es-restart
+		killall emulationstation
     else
         cp "$KEYS" "$SWITCH_BAK" || exit 1
         local a_val=$([[ -f "$BB_FLAG" ]] && echo "esc" || echo "backspace")
@@ -359,16 +397,17 @@ Switch_AB() {
             -e 's/\(^input_player1_a_btn = "\)1"/\10/' \
             -e 's/\(^input_player1_b_btn = "\)0"/\11/' \
             "$OSH"
-		if [[ -f "$KODI" ]]; then
-			sed -i \
-				-e 's/feature name="a" button="1"/feature name="a" button="0"/' \
-				-e 's/feature name="b" button="0"/feature name="b" button="1"/' \
-				"$KODI"
-		fi
 		sed -i '/^190000004b4800000011000000010000,/ s/a:b1,b:b0/a:b0,b:b1/' "$PM"
 		Retro_West
+		TM_swap
+		ES_swap
+		if [[ -f "$KODI" ]]; then
+			KODI_swap
+		fi
         touch "$AB_FLAG"
         dialog --backtitle "$T_BACKTITLE" --msgbox "$T_AB_SWITCH" 6 50
+		touch /tmp/es-restart
+		killall emulationstation
     fi
 }
 
