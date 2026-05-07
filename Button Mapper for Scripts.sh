@@ -306,7 +306,11 @@ ES_stock() {
 }
 
 ES_swap() {
-	sed -i '/bool name="ClockMode12"/a <bool name="InvertButtons" value="true" />' "$ES"
+	if grep -q 'bool name="ClockMode12"' "$ES"; then
+		sed -i '/bool name="ClockMode12"/a <bool name="InvertButtons" value="true" />' "$ES"
+	else
+		sed -i '1a <bool name="InvertButtons" value="true" />' "$ES"
+	fi
 }
 
 # =======================================================
