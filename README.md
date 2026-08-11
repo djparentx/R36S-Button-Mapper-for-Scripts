@@ -4,6 +4,8 @@ v1.2 by djparent
 
 A lightweight button mapping tool for the R36S, designed for ArkOS and dArkOS, providing a simple, controller-friendly interface to modify A/B behavior and enable B-as-Back functionality across scripts.
 
+[<img width="300" height="150" alt="ChatGPT Image Aug 11, 2026, 10_52_38 AM" src="https://github.com/user-attachments/assets/8680b713-26ad-4d3a-90ea-da1b27a0fe93" />](https://ko-fi.com/O8Z424G15Y)
+
 ---
 
 ## Overview
